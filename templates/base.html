@@ -224,8 +224,7 @@
       <div class="vh-foot-col">
         <h4 class="vh-foot-title">THÔNG TIN LIÊN HỆ</h4>
         <p><strong>Trụ sở:</strong> Khu Công nghệ cao, TP. Thủ Đức, TP. Hồ Chí Minh</p>
-        <p>✉️ <strong>Email:</strong> <a href="mailto:{{ ADMIN_EMAIL|default:SITE_CONTACT_EMAIL }}">{{
-            SITE_CONTACT_EMAIL }}</a></p>
+        <p>✉️ <strong>Email:</strong> <a href="mailto:{{ ADMIN_EMAIL|default:SITE_CONTACT_EMAIL }}">{{ SITE_CONTACT_EMAIL }}</a></p>
         {% if SITE_HOTLINE %}<p>📞 <strong>Hotline:</strong> <span class="hotline-hl">{{ SITE_HOTLINE }}</span> (8h00 -
           21h30)</p>{% endif %}
         <div class="vh-pay-methods">

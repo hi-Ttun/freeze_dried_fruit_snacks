@@ -1,11 +1,9 @@
 {% extends "base.html" %}
 {% block title %}Đơn hàng {{ order.code }} | NutriSnack{% endblock %}
 {% block content %}
-{% if placed %}<p class="msg msg-success">Đặt hàng thành công. Hãy lưu lại mã đơn <strong>{{ order.code }}</strong> để
-  tra cứu.</p>{% endif %}
+{% if placed %}<p class="msg msg-success">Đặt hàng thành công. Hãy lưu lại mã đơn <strong>{{ order.code }}</strong> để tra cứu.</p>{% endif %}
 <h1>Đơn hàng {{ order.code }}</h1>
-<p><span class="tag" id="order-status-badge">{{ order.get_status_display }}</span> Đặt lúc {{
-  order.created_at|date:"d/m/Y H:i" }}</p>
+<p><span class="tag" id="order-status-badge">{{ order.get_status_display }}</span> Đặt lúc {{ order.created_at|date:"d/m/Y H:i" }}</p>
 
 <div class="order-grid">
   <section>
@@ -23,8 +21,7 @@
         <tr>
           <td data-label="Sản phẩm">{{ item.product_name }} ({{ item.variant_label }})
             <br><small class="muted">Lô:
-              {% for a in item.allocations.all %}<a href="{% url 'trace' %}?code={{ a.lot.code }}">{{ a.lot.code
-                }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
+              {% for a in item.allocations.all %}<a href="{% url 'trace' %}?code={{ a.lot.code }}">{{ a.lot.code }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
             </small>
           </td>
           <td data-label="Số lượng">{{ item.quantity }}</td>
@@ -43,57 +40,50 @@
     <p>{{ order.customer_name }}, {{ order.phone }}</p>
     <p>{{ order.address }}</p>
     {% if order.shipment and order.shipment.tracking_code %}
-    <p>Đơn vị vận chuyển: {{ order.shipment.carrier|default:"Đang cập nhật" }}. Mã vận đơn: <strong>{{
-        order.shipment.tracking_code }}</strong></p>
+    <p>Đơn vị vận chuyển: {{ order.shipment.carrier|default:"Đang cập nhật" }}. Mã vận đơn: <strong>{{ order.shipment.tracking_code }}</strong></p>
     {% endif %}
 
     <h2 class="h3">Thanh toán</h2>
-    <p>{{ order.payment.get_method_display }}: <strong id="payment-status-badge">{{ order.payment.get_status_display
-        }}</strong></p>
+    <p>{{ order.payment.get_method_display }}: <strong id="payment-status-badge">{{ order.payment.get_status_display }}</strong></p>
 
     {% if bank %}
-    {% if order.payment.status == "paid" %}
-    <div class="msg msg-success animate-fade-in" style="background:#e8f5e9; border:1px solid #4caf50; color:#1b5e20;">
-      <h4 style="margin:0 0 6px 0;"> Đã thanh toán chuyển khoản thành công!</h4>
-      <p style="margin:0;">Hệ thống đã nhận được tiền và tự động cập nhật đơn hàng theo thời gian thực.</p>
-      {% if order.payment.reference %}<small class="muted">Mã tham chiếu:
-        <code>{{ order.payment.reference }}</code></small>{% endif %}
-    </div>
-    {% else %}
-    <div class="payos-box" id="payos-payment-box">
-      <div class="payos-header">
-        <span class="payos-badge"> Chuyển khoản VietQR 24/7 (Vietcombank)</span>
-        <p class="payos-note">Quét mã VietQR bên dưới bằng bất kỳ ứng dụng ngân hàng nào. Số tiền và nội dung chuyển
-          khoản đã được điền sẵn chính xác.</p>
+      {% if order.payment.status == "paid" %}
+      <div class="msg msg-success animate-fade-in" style="background:#e8f5e9; border:1px solid #4caf50; color:#1b5e20;">
+        <h4 style="margin:0 0 6px 0;">🎉 Đã thanh toán chuyển khoản thành công!</h4>
+        <p style="margin:0;">Hệ thống đã nhận được tiền và tự động cập nhật đơn hàng theo thời gian thực.</p>
+        {% if order.payment.reference %}<small class="muted">Mã tham chiếu: <code>{{ order.payment.reference }}</code></small>{% endif %}
       </div>
+      {% else %}
+      <div class="payos-box" id="payos-payment-box">
+        <div class="payos-header">
+          <span class="payos-badge">⚡ Chuyển khoản VietQR 24/7 (Vietcombank)</span>
+          <p class="payos-note">Quét mã VietQR bên dưới bằng bất kỳ ứng dụng ngân hàng nào. Số tiền và nội dung chuyển khoản đã được điền sẵn chính xác.</p>
+        </div>
 
-      {% if bank.qr_url %}
-      <div class="payos-qr-container">
-        <img class="qr payos-qr-img" src="{{ bank.qr_url }}" alt="Mã VietQR Vietcombank cho đơn {{ order.code }}"
-          width="220" height="220">
-        <div class="payos-qr-info">
-          <p>Ngân hàng: <strong>{{ bank.bank }}</strong></p>
-          <p>Số tài khoản: <strong style="color:var(--vh-green-dark); font-size:1.15rem;">{{ bank.account }}</strong>
-          </p>
-          <p>Chủ tài khoản: <strong>{{ bank.holder }}</strong></p>
-          <p>Số tiền: <strong style="color:var(--vh-green-dark); font-size:1.15rem;">{{ order.total|vnd }}</strong></p>
-          <p>Nội dung chuyển khoản: <strong>{{ order.code }}</strong></p>
+        {% if bank.qr_url %}
+        <div class="payos-qr-container">
+          <img class="qr payos-qr-img" src="{{ bank.qr_url }}" alt="Mã VietQR Vietcombank cho đơn {{ order.code }}" width="220" height="220">
+          <div class="payos-qr-info">
+            <p>Ngân hàng: <strong>{{ bank.bank }}</strong></p>
+            <p>Số tài khoản: <strong style="color:var(--vh-green-dark); font-size:1.15rem;">{{ bank.account }}</strong></p>
+            <p>Chủ tài khoản: <strong>{{ bank.holder }}</strong></p>
+            <p>Số tiền: <strong style="color:var(--vh-green-dark); font-size:1.15rem;">{{ order.total|vnd }}</strong></p>
+            <p>Nội dung chuyển khoản: <strong>{{ order.code }}</strong></p>
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="payos-listening" id="payos-listening-indicator">
+          <span class="pulse-dot"></span>
+          <span>Đang lắng nghe tín hiệu thanh toán Realtime...</span>
+        </div>
+
+        <div class="payos-test-bar">
+          <small class="muted">🛠️ [Kiểm thử đồ án TMDT]:</small>
+          <button type="button" class="btn btn-sm btn-outline" id="btn-simulate-payos" onclick="simulatePayosPayment()">⚡ Giả lập quét mã thanh toán (Bắn IPN)</button>
         </div>
       </div>
       {% endif %}
-
-      <div class="payos-listening" id="payos-listening-indicator">
-        <span class="pulse-dot"></span>
-        <span>Đang lắng nghe tín hiệu thanh toán Realtime...</span>
-      </div>
-
-      <div class="payos-test-bar">
-        <small class="muted"> [Kiểm thử đồ án TMDT]:</small>
-        <button type="button" class="btn btn-sm btn-outline" id="btn-simulate-payos" onclick="simulatePayosPayment()">⚡
-          Giả lập quét mã thanh toán (Bắn IPN)</button>
-      </div>
-    </div>
-    {% endif %}
     {% elif order.payment.method == "bank" and order.payment.status == "pending" %}
     <p class="muted">Cửa hàng sẽ liên hệ để gửi thông tin chuyển khoản.</p>
     {% endif %}
@@ -101,8 +91,7 @@
     <h2 class="h3">Tiến trình đơn hàng</h2>
     <ol class="timeline" id="order-timeline">
       {% for h in history %}
-      <li><strong>{{ h.get_to_status_display }}</strong> <span class="muted">{{ h.created_at|date:"d/m/Y H:i"
-          }}</span>{% if h.note %}<br><small>{{ h.note }}</small>{% endif %}</li>
+      <li><strong>{{ h.get_to_status_display }}</strong> <span class="muted">({{ h.created_at|date:"d/m/Y H:i" }})</span>{% if h.note %}<br><small>{{ h.note }}</small>{% endif %}</li>
       {% endfor %}
     </ol>
   </section>
@@ -132,8 +121,8 @@
             if (payosBox) {
               payosBox.innerHTML = `
               <div class="msg msg-success animate-fade-in" style="background:#e8f5e9; border:1px solid #4caf50; color:#1b5e20; padding:16px; border-radius:8px;">
-                <h4 style="margin:0 0 6px 0; font-size:1.1rem;"> Đã nhận thanh toán thành công qua PayOS!</h4>
-                <p style="margin:0;">Hệ thống đã nhận thông báo IPN Webhook Realtime. Trạng thái đơn hàng: <strong>${data.status_display}</strong>.</p>
+                <h4 style="margin:0 0 6px 0; font-size:1.1rem;">🎉 Đã nhận thanh toán thành công!</h4>
+                <p style="margin:0;">Hệ thống đã nhận thông báo thanh toán Realtime. Trạng thái đơn hàng: <strong>${data.status_display}</strong>.</p>
               </div>
             `;
             }
@@ -151,7 +140,7 @@
       const btn = document.getElementById("btn-simulate-payos");
       if (btn) {
         btn.disabled = true;
-        btn.textContent = " Đang bắn IPN...";
+        btn.textContent = "⏳ Đang gửi IPN...";
       }
       try {
         const res = await fetch("{% url 'payos_simulate_payment' order.code %}", {
@@ -168,14 +157,14 @@
           alert("Lỗi: " + (data.message || "Không xác định"));
           if (btn) {
             btn.disabled = false;
-            btn.textContent = " Thử lại";
+            btn.textContent = "⚡ Thử lại";
           }
         }
       } catch (e) {
         alert("Lỗi kết nối: " + e);
         if (btn) {
           btn.disabled = false;
-          btn.textContent = " Thử lại";
+          btn.textContent = "⚡ Thử lại";
         }
       }
     };
