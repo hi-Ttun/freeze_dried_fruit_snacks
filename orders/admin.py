@@ -70,10 +70,9 @@ def _status_action(target, label):
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     list_display = ("code", "customer_name", "phone", "total", "status", "payment_status", "created_at")
-    list_filter = ("status", "zone", "created_at")
+    list_filter = ("status", "zone")
     search_fields = ("code", "customer_name", "phone", "email")
     list_select_related = ("payment",)
-    date_hierarchy = "created_at"
     inlines = [OrderItemInline, PaymentInline, ShipmentInline, StatusHistoryInline]
     readonly_fields = (
         "code", "status", "user", "customer_name", "phone", "email", "zone",
