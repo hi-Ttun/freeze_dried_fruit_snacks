@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block content %}
+<!-- Banner lớn phong cách Vitamin House -->
+<section class="vh-hero-section">
+  <div class="vh-hero-inner">
+    <div class="vh-hero-text">
+      <div class="vh-hero-tag">🌿 100% TỰ NHIÊN • NÔNG SẢN VIỆT CHỌN LỌC</div>
+      <h1 class="vh-hero-heading">SIÊU THỊ TRÁI CÂY SẤY &amp; HẠT DINH DƯỠNG</h1>
+      <p class="vh-hero-subheading">
+        Sấy thăng hoa âm sâu -40°C giữ nguyên cấu trúc giòn xốp và 95% vi chất dinh dưỡng. 
+        Mỗi túi sản phẩm gắn liền với một <strong>mã lô truy xuất nguồn gốc</strong> và xuất kho theo chuẩn <strong>FEFO</strong>.
+      </p>
+
+      <!-- Hộp tra cứu nhanh mã lô theo chuẩn FEFO -->
+      <div class="vh-trace-box">
+        <div class="vh-trace-header">
+          <span class="vh-trace-icon">🔎</span>
+          <div>
+            <strong>TRA CỨU MÃ LÔ HÀNG (FEFO TRACEABILITY)</strong>
+            <p>Nhập mã in trên bao bì để kiểm tra hạn dùng, ngày thu hoạch và xuất xứ:</p>
+          </div>
+        </div>
+        <form class="vh-trace-form" action="{% url 'trace' %}" method="get">
+          <input type="text" name="code" placeholder="Nhập mã lô (ví dụ: NS01-50G-L1, NS01-50G-L2...)" autocomplete="off" required>
+          <button type="submit" class="vh-trace-btn">
+            <span>Tra cứu ngay</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </button>
+        </form>
+      </div>
+
+      <!-- Cam kết dịch vụ -->
+      <div class="vh-hero-checks">
+        <span>✓ Ưu tiên xuất lô hạn mới nhất (FEFO)</span>
+        <span>✓ Chuẩn VietGAP, HACCP, ISO 22000</span>
+        <span>✓ Miễn phí giao hàng toàn quốc từ 500k</span>
+      </div>
+    </div>
+
+    <!-- Cột bên phải: Card sản phẩm nổi bật nhất -->
+    <div class="vh-hero-visual">
+      <div class="vh-spotlight-card">
+        <span class="vh-spotlight-badge">🔥 BÁN CHẠY NHẤT</span>
+        <div class="vh-spotlight-img">
+          <img src="/media/products/sau-rieng-say-thang-hoa.jpg" alt="Sầu riêng sấy thăng hoa Monthong">
+        </div>
+        <div class="vh-spotlight-info">
+          <h3>Sầu riêng sấy Monthong thượng hạng</h3>
+          <p>Múi giòn xốp, ngọt thơm béo ngậy chuẩn vị tự nhiên, không cholesterol.</p>
+          <div class="vh-spotlight-price-row">
+            <span class="vh-spotlight-price">Từ 89.000đ</span>
+            <a class="vh-btn-buy" href="/san-pham/sau-rieng-say-thang-hoa/">Mua ngay</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Danh mục khám phá nhanh -->
+<section class="block categories-section">
+  <div class="block-head">
+    <div>
+      <h2>DANH MỤC SẢN PHẨM</h2>
+      <p class="muted">Khám phá các dòng sản phẩm nông sản sạch chọn lọc từ NutriSnack</p>
+    </div>
+    <a class="view-all-link" href="{% url 'product_list' %}">Xem tất cả →</a>
+  </div>
+  <div class="category-cards">
+    {% for c in categories %}
+      <a class="category-card" href="{% url 'product_list' %}?category={{ c.slug }}">
+        <div class="category-card-icon">
+          {% if c.slug == 'trai-cay-say-thang-hoa' %}🍓
+          {% elif c.slug == 'hat-dinh-duong' %}🌰
+          {% elif c.slug == 'trail-mix-granola' %}🥣
+          {% elif c.slug == 'combo-qua-tang' %}🎁
+          {% else %}🌿{% endif %}
+        </div>
+        <div class="category-card-body">
+          <span class="category-card-title">{{ c.name }}</span>
+          <span class="category-card-count">Khám phá ngay →</span>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- Sản phẩm nổi bật -->
+<section class="block featured-section">
+  <div class="block-head">
+    <div>
+      <h2>SẢN PHẨM NỔI BẬT ĐƯỢC YÊU THÍCH</h2>
+      <p class="muted">Cam kết 100% trái cây sấy thăng hoa và hạt dinh dưỡng cao cấp không dầu chiên</p>
+    </div>
+    <a class="view-all-link" href="{% url 'product_list' %}">Xem tất cả sản phẩm →</a>
+  </div>
+  {% if featured %}
+    <div class="tiles">
+      {% for p in featured %}
+        {% include "shop/_product_tile.html" %}
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="muted">Chưa có sản phẩm nổi bật.</p>
+  {% endif %}
+</section>
+
+<!-- 4 Cam kết phong cách Vitamin House -->
+<section class="block promises-section">
+  <div class="promises-grid">
+    <div class="promise-card">
+      <div class="promise-icon">🛡️</div>
+      <h3>Minh bạch theo Lô (FEFO)</h3>
+      <p>Mỗi túi sản phẩm đều in rõ mã lô. Hệ thống tự động ưu tiên xuất lô cận hạn an toàn trước, loại bỏ lô quá hạn.</p>
+    </div>
+    <div class="promise-card">
+      <div class="promise-icon">🌱</div>
+      <h3>100% Nông sản nguyên chất</h3>
+      <p>Thu hoạch từ các vùng trồng đặc sản nổi tiếng Việt Nam (Đà Lạt, Bến Tre, Đồng Tháp, Đắk Lắk, Bình Phước).</p>
+    </div>
+    <div class="promise-card">
+      <div class="promise-icon">❄️</div>
+      <h3>Công nghệ sấy thăng hoa</h3>
+      <p>Hút chân không ở nhiệt độ âm sâu giúp giữ trọn vẹn màu sắc, hình dáng quả và 95% vitamin, không dầu chiên.</p>
+    </div>
+    <div class="promise-card">
+      <div class="promise-icon">🔄</div>
+      <h3>Đổi trả linh hoạt trong 7 ngày</h3>
+      <p>Hỗ trợ đổi trả hoặc hoàn tiền 100% nhanh chóng nếu bao bì có bất kỳ lỗi nào trong quá trình vận chuyển.</p>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+{% block title %}Đơn hàng {{ order.code }} | NutriSnack{% endblock %}
+{% block content %}
+{% if placed %}<p class="msg msg-success">Đặt hàng thành công. Hãy lưu lại mã đơn <strong>{{ order.code }}</strong> để
+  tra cứu.</p>{% endif %}
+<h1>Đơn hàng {{ order.code }}</h1>
+<p><span class="tag" id="order-status-badge">{{ order.get_status_display }}</span> Đặt lúc {{
+  order.created_at|date:"d/m/Y H:i" }}</p>
+
+<div class="order-grid">
+  <section>
+    <h2 class="h3">Sản phẩm</h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Sản phẩm</th>
+          <th>Số lượng</th>
+          <th>Thành tiền</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in order.items.all %}
+        <tr>
+          <td data-label="Sản phẩm">{{ item.product_name }} ({{ item.variant_label }})
+            <br><small class="muted">Lô:
+              {% for a in item.allocations.all %}<a href="{% url 'trace' %}?code={{ a.lot.code }}">{{ a.lot.code
+                }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
+            </small>
+          </td>
+          <td data-label="Số lượng">{{ item.quantity }}</td>
+          <td data-label="Thành tiền">{{ item.line_total|vnd }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p>Tiền hàng {{ order.subtotal|vnd }}</p>
+    <p>Phí vận chuyển {{ order.shipping_fee|vnd }}</p>
+    <p><strong>Tổng thanh toán {{ order.total|vnd }}</strong></p>
+  </section>
+
+  <section>
+    <h2 class="h3">Giao hàng</h2>
+    <p>{{ order.customer_name }}, {{ order.phone }}</p>
+    <p>{{ order.address }}</p>
+    {% if order.shipment and order.shipment.tracking_code %}
+    <p>Đơn vị vận chuyển: {{ order.shipment.carrier|default:"Đang cập nhật" }}. Mã vận đơn: <strong>{{
+        order.shipment.tracking_code }}</strong></p>
+    {% endif %}
+
+    <h2 class="h3">Thanh toán</h2>
+    <p>{{ order.payment.get_method_display }}: <strong id="payment-status-badge">{{ order.payment.get_status_display
+        }}</strong></p>
+
+    {% if bank %}
+    {% if order.payment.status == "paid" %}
+    <div class="msg msg-success animate-fade-in" style="background:#e8f5e9; border:1px solid #4caf50; color:#1b5e20;">
+      <h4 style="margin:0 0 6px 0;"> Đã thanh toán chuyển khoản thành công!</h4>
+      <p style="margin:0;">Hệ thống đã nhận được tiền và tự động cập nhật đơn hàng theo thời gian thực.</p>
+      {% if order.payment.reference %}<small class="muted">Mã tham chiếu:
+        <code>{{ order.payment.reference }}</code></small>{% endif %}
+    </div>
+    {% else %}
+    <div class="payos-box" id="payos-payment-box">
+      <div class="payos-header">
+        <span class="payos-badge"> Chuyển khoản VietQR 24/7 (Vietcombank)</span>
+        <p class="payos-note">Quét mã VietQR bên dưới bằng bất kỳ ứng dụng ngân hàng nào. Số tiền và nội dung chuyển
+          khoản đã được điền sẵn chính xác.</p>
+      </div>
+
+      {% if bank.qr_url %}
+      <div class="payos-qr-container">
+        <img class="qr payos-qr-img" src="{{ bank.qr_url }}" alt="Mã VietQR Vietcombank cho đơn {{ order.code }}"
+          width="220" height="220">
+        <div class="payos-qr-info">
+          <p>Ngân hàng: <strong>{{ bank.bank }}</strong></p>
+          <p>Số tài khoản: <strong style="color:var(--vh-green-dark); font-size:1.15rem;">{{ bank.account }}</strong>
+          </p>
+          <p>Chủ tài khoản: <strong>{{ bank.holder }}</strong></p>
+          <p>Số tiền: <strong style="color:var(--vh-green-dark); font-size:1.15rem;">{{ order.total|vnd }}</strong></p>
+          <p>Nội dung chuyển khoản: <strong>{{ order.code }}</strong></p>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="payos-listening" id="payos-listening-indicator">
+        <span class="pulse-dot"></span>
+        <span>Đang lắng nghe tín hiệu thanh toán Realtime...</span>
+      </div>
+
+      <div class="payos-test-bar">
+        <small class="muted"> [Kiểm thử đồ án TMDT]:</small>
+        <button type="button" class="btn btn-sm btn-outline" id="btn-simulate-payos" onclick="simulatePayosPayment()">⚡
+          Giả lập quét mã thanh toán (Bắn IPN)</button>
+      </div>
+    </div>
+    {% endif %}
+    {% elif order.payment.method == "bank" and order.payment.status == "pending" %}
+    <p class="muted">Cửa hàng sẽ liên hệ để gửi thông tin chuyển khoản.</p>
+    {% endif %}
+
+    <h2 class="h3">Tiến trình đơn hàng</h2>
+    <ol class="timeline" id="order-timeline">
+      {% for h in history %}
+      <li><strong>{{ h.get_to_status_display }}</strong> <span class="muted">{{ h.created_at|date:"d/m/Y H:i"
+          }}</span>{% if h.note %}<br><small>{{ h.note }}</small>{% endif %}</li>
+      {% endfor %}
+    </ol>
+  </section>
+</div>
+
+{% if order.payment and order.payment.status == "pending" %}
+<script>
+  (function () {
+    const statusUrl = "{% url 'order_payment_status' order.code %}";
+    const statusBadge = document.getElementById("order-status-badge");
+    const paymentBadge = document.getElementById("payment-status-badge");
+    const payosBox = document.getElementById("payos-payment-box");
+    let isPolling = true;
+
+    async function checkPaymentStatus() {
+      if (!isPolling) return;
+      try {
+        const res = await fetch(statusUrl, {
+          headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.is_paid) {
+            isPolling = false;
+            if (statusBadge) statusBadge.textContent = data.status_display;
+            if (paymentBadge) paymentBadge.textContent = data.payment_status_display;
+            if (payosBox) {
+              payosBox.innerHTML = `
+              <div class="msg msg-success animate-fade-in" style="background:#e8f5e9; border:1px solid #4caf50; color:#1b5e20; padding:16px; border-radius:8px;">
+                <h4 style="margin:0 0 6px 0; font-size:1.1rem;"> Đã nhận thanh toán thành công qua PayOS!</h4>
+                <p style="margin:0;">Hệ thống đã nhận thông báo IPN Webhook Realtime. Trạng thái đơn hàng: <strong>${data.status_display}</strong>.</p>
+              </div>
+            `;
+            }
+            setTimeout(() => { window.location.reload(); }, 2500);
+          }
+        }
+      } catch (err) {
+        console.warn("Polling payment status:", err);
+      }
+    }
+
+    const pollTimer = setInterval(checkPaymentStatus, 2500);
+
+    window.simulatePayosPayment = async function () {
+      const btn = document.getElementById("btn-simulate-payos");
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = " Đang bắn IPN...";
+      }
+      try {
+        const res = await fetch("{% url 'payos_simulate_payment' order.code %}", {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+            "Content-Type": "application/json"
+          }
+        });
+        const data = await res.json();
+        if (data.success) {
+          checkPaymentStatus();
+        } else {
+          alert("Lỗi: " + (data.message || "Không xác định"));
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = " Thử lại";
+          }
+        }
+      } catch (e) {
+        alert("Lỗi kết nối: " + e);
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = " Thử lại";
+        }
+      }
+    };
+  })();
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Giỏ hàng | NutriSnack{% endblock %}
+{% block content %}
+<h1>Giỏ hàng</h1>
+{% if lines %}
+<table class="table cart">
+  <thead><tr><th>Sản phẩm</th><th>Đơn giá</th><th>Số lượng</th><th>Thành tiền</th><th></th></tr></thead>
+  <tbody>
+  {% for l in lines %}
+    <tr>
+      <td data-label="Sản phẩm">
+        <a href="{% url 'product_detail' l.variant.product.slug %}">{{ l.variant.product.name }}</a> ({{ l.variant.label }})
+        {% if l.short %}<br><span class="tag tag-out">{% if l.stock %}Chỉ còn {{ l.stock }}{% else %}Hết hàng{% endif %}</span>{% endif %}
+      </td>
+      <td data-label="Đơn giá">{{ l.unit_price|vnd }}</td>
+      <td data-label="Số lượng">
+        <form method="post" action="{% url 'cart_update' l.variant.id %}" class="add">
+          {% csrf_token %}
+          <label class="sr" for="q{{ l.variant.id }}">Số lượng</label>
+          <input id="q{{ l.variant.id }}" type="number" name="quantity" value="{{ l.quantity }}" min="0" max="20">
+          <button class="btn" type="submit">Cập nhật</button>
+        </form>
+      </td>
+      <td data-label="Thành tiền">{{ l.line_total|vnd }}</td>
+      <td>
+        <form method="post" action="{% url 'cart_remove' l.variant.id %}">{% csrf_token %}<button class="linklike" type="submit">Xóa</button></form>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<div class="summary">
+  <p>Tạm tính <strong>{{ subtotal|vnd }}</strong></p>
+  {% if remaining_free %}
+    <p class="muted">Mua thêm {{ remaining_free|vnd }} để được miễn phí vận chuyển (đơn từ {{ free_ship_threshold|vnd }}).</p>
+  {% else %}
+    <p class="muted">Đơn của bạn được miễn phí vận chuyển.</p>
+  {% endif %}
+  {% if has_problem %}
+    <p class="msg msg-error">Một số sản phẩm không đủ hàng. Hãy giảm số lượng hoặc xóa khỏi giỏ để thanh toán.</p>
+  {% else %}
+    <a class="btn btn-primary" href="{% url 'checkout' %}">Tiến hành thanh toán</a>
+  {% endif %}
+</div>
+{% else %}
+<p class="empty">Giỏ hàng đang trống. <a href="{% url 'product_list' %}">Xem sản phẩm</a> để bắt đầu mua sắm.</p>
+{% endif %}
+{% endblock %}

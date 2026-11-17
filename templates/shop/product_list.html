@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Sản phẩm | NutriSnack{% endblock %}
+{% block content %}
+<h1>{% if category %}{{ category.name }}{% else %}Tất cả sản phẩm{% endif %}</h1>
+<div class="pills">
+  <a class="pill{% if not category %} on{% endif %}" href="{% url 'product_list' %}">Tất cả</a>
+  {% for c in categories %}<a class="pill{% if category and category.pk == c.pk %} on{% endif %}" href="{% url 'product_list' %}?category={{ c.slug }}">{{ c.name }}</a>{% endfor %}
+</div>
+
+<form class="filters" method="get">
+  {% if category %}<input type="hidden" name="category" value="{{ category.slug }}">{% endif %}
+  <label for="q">Từ khóa</label>
+  <input id="q" type="search" name="q" value="{{ q }}" placeholder="Tên sản phẩm">
+  <label for="sort">Sắp xếp</label>
+  <select id="sort" name="sort">
+    <option value="new"{% if sort == "new" %} selected{% endif %}>Mới nhất</option>
+    <option value="price_asc"{% if sort == "price_asc" %} selected{% endif %}>Giá tăng dần</option>
+    <option value="price_desc"{% if sort == "price_desc" %} selected{% endif %}>Giá giảm dần</option>
+    <option value="name"{% if sort == "name" %} selected{% endif %}>Tên A đến Z</option>
+  </select>
+  <button class="btn" type="submit">Áp dụng</button>
+</form>
+
+{% if page.object_list %}
+<div class="tiles">{% for p in page.object_list %}{% include "shop/_product_tile.html" %}{% endfor %}</div>
+{% else %}
+<p class="empty">Không tìm thấy sản phẩm phù hợp. Hãy thử từ khóa khác hoặc <a href="{% url 'product_list' %}">xem tất cả sản phẩm</a>.</p>
+{% endif %}
+
+{% if page.has_other_pages %}
+<nav class="pager" aria-label="Phân trang">
+  {% if page.has_previous %}<a href="?{{ qs }}{% if qs %}&{% endif %}page={{ page.previous_page_number }}">Trang trước</a>{% endif %}
+  <span>Trang {{ page.number }} / {{ page.paginator.num_pages }}</span>
+  {% if page.has_next %}<a href="?{{ qs }}{% if qs %}&{% endif %}page={{ page.next_page_number }}">Trang sau</a>{% endif %}
+</nav>
+{% endif %}
+{% endblock %}

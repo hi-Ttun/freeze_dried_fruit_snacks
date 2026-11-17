@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Truy xuất nguồn gốc | NutriSnack{% endblock %}
+{% block content %}
+<h1>Truy xuất nguồn gốc theo lô</h1>
+<form class="trace-box" method="get">
+  <label for="code">Mã lô trên bao bì</label>
+  <div class="trace-row">
+    <input id="code" type="text" name="code" value="{{ code }}" placeholder="Nhập mã lô" autocomplete="off" required>
+    <button class="btn btn-primary" type="submit">Tra cứu lô hàng</button>
+  </div>
+</form>
+
+{% if code %}
+  {% if lot %}
+  <section class="result">
+    <h2>Lô {{ lot.code }}</h2>
+    <dl class="facts">
+      <dt>Sản phẩm</dt><dd><a href="{% url 'product_detail' lot.variant.product.slug %}">{{ lot.variant.product.name }}</a> ({{ lot.variant.label }})</dd>
+      <dt>Ngày sản xuất</dt><dd>{{ lot.produced_on|date:"d/m/Y" }}</dd>
+      <dt>Hạn sử dụng</dt>
+      <dd>{{ lot.expires_on|date:"d/m/Y" }}
+        {% if lot.days_left < 0 %}<span class="tag tag-out">Đã hết hạn</span>{% else %}<span class="muted">(còn {{ lot.days_left }} ngày)</span>{% endif %}
+      </dd>
+      <dt>Số lượng nhập</dt><dd>{{ lot.quantity_in }}</dd>
+      {% if lot.source_note %}<dt>Nguồn gốc</dt><dd>{{ lot.source_note }}</dd>{% endif %}
+      {% if lot.variant.product.origin %}<dt>Xuất xứ sản phẩm</dt><dd>{{ lot.variant.product.origin }}</dd>{% endif %}
+      {% if lot.variant.product.certificates %}<dt>Chứng nhận</dt><dd>{{ lot.variant.product.certificates }}</dd>{% endif %}
+    </dl>
+  </section>
+  {% else %}
+  <p class="empty">Không tìm thấy lô <strong>{{ code }}</strong>. Hãy kiểm tra lại mã in trên bao bì hoặc liên hệ cửa hàng.</p>
+  {% endif %}
+{% endif %}
+{% endblock %}

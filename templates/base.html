@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}NutriSnack - Siêu thị Trái cây sấy thăng hoa & Hạt dinh dưỡng{% endblock %}</title>
+  <meta name="description"
+    content="{% block meta_description %}NutriSnack: Trái cây sấy thăng hoa và hạt dinh dưỡng cao cấp Việt Nam. Mỗi túi có mã lô minh bạch nguồn gốc và hạn sử dụng.{% endblock %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/site.css' %}?v=20261115_radio_fix">
+</head>
+
+<body>
+  <a class="skip" href="#main">Bỏ qua điều hướng</a>
+
+  <!-- THANH QUẢN TRỊ DÀNH RIÊNG CHO ADMIN & NHÂN VIÊN (CHỈ HIỂN THỊ KHI ĐĂNG NHẬP ADMIN) -->
+  {% if user.is_staff %}
+  <div class="admin-topbar">
+    <div class="wrap admin-topbar-inner">
+      <div class="admin-status">
+        <span class="admin-pulse-dot"></span>
+        <strong>CHẾ ĐỘ QUẢN TRỊ VIÊN (ADMIN)</strong>
+        <span class="admin-user-tag">Xin chào, {{ user.username }}</span>
+      </div>
+      <div class="admin-tools">
+        <a href="{% url 'admin:index' %}" class="admin-tool-link primary">Trang Quản trị (Admin Portal)</a>
+        <a href="{% url 'dashboard' %}" class="admin-tool-link">Báo cáo Doanh thu &amp; Kho</a>
+        <a href="{% url 'trace' %}" class="admin-tool-link">Tra cứu mã lô (FEFO)</a>
+        <a href="{% url 'order_lookup' %}" class="admin-tool-link">Quản lý &amp; Tra cứu đơn</a>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Top bar dành cho khách hàng -->
+  <div class="top-bar">
+    <div class="wrap top-bar-inner">
+      <div class="top-promo">
+        <span>🚚 <strong>FREESHIP:</strong> Miễn phí vận chuyển toàn quốc cho đơn hàng từ 500.000đ</span>
+      </div>
+      <div class="top-nav-links">
+        {% if SITE_HOTLINE %}<a href="tel:{{ SITE_HOTLINE }}" class="top-hotline">Hotline: <strong>{{ SITE_HOTLINE }}</strong> (8h00 - 21h30)</a>{% endif %}
+        {% if SITE_CONTACT_EMAIL %}<a href="mailto:{{ ADMIN_EMAIL|default:SITE_CONTACT_EMAIL }}" title="Gửi email liên hệ">✉️ {{ SITE_CONTACT_EMAIL }}</a>{% endif %}
+        <a href="{% url 'about' %}">Về NutriSnack</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Header xanh lá phong cách Vitamin House -->
+  <header class="vh-header">
+    <div class="wrap vh-header-inner">
+      <!-- Logo thương hiệu -->
+      <a class="vh-logo" href="{% url 'home' %}">
+        <div class="vh-logo-icon">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
+            <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+          </svg>
+        </div>
+        <div class="vh-logo-text">
+          <span class="vh-logo-name">NUTRISNACK</span>
+          <span class="vh-logo-sub">HEALTHY & NATURAL FOOD</span>
+        </div>
+      </a>
+
+      <!-- Thanh tìm kiếm kiểu Vitamin House -->
+      <form class="vh-search-bar" action="{% url 'product_list' %}" method="get" role="search">
+        <input type="search" name="q" placeholder="Tìm nhanh sản phẩm (sầu riêng sấy, macca, hạt điều...)"
+          aria-label="Tìm kiếm sản phẩm" value="{{ request.GET.q }}">
+        <div class="vh-search-cat">
+          <select name="category" aria-label="Chọn danh mục tìm kiếm">
+            <option value="">Tất cả danh mục</option>
+            {% if nav_categories %}
+            {% for c in nav_categories %}
+            <option value="{{ c.slug }}" {% if request.GET.category == c.slug %}selected{% endif %}>{{ c.name }}</option>
+            {% endfor %}
+            {% endif %}
+          </select>
+        </div>
+        <button class="vh-search-btn" type="submit" aria-label="Tìm kiếm">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </button>
+      </form>
+
+      <!-- Khu vực bên phải: Tài khoản & Giỏ hàng -->
+      <div class="vh-right-actions">
+        <!-- Khối tài khoản -->
+        <div class="vh-account-box">
+          {% if user.is_authenticated %}
+          <div class="vh-account-trigger">
+            <span class="vh-acc-icon">👤</span>
+            <div class="vh-acc-text">
+              <span class="vh-acc-small">Xin chào,</span>
+              <span class="vh-acc-bold"><strong>{{ user.username|truncatechars:10 }}</strong> ▾</span>
+            </div>
+            <div class="vh-dropdown">
+              <a href="{% url 'my_orders' %}">📦 Đơn hàng của tôi</a>
+              {% if user.is_staff %}
+              <a href="{% url 'admin:index' %}"> Trang Quản trị (Admin)</a>
+              <a href="{% url 'dashboard' %}">📊 Báo cáo bán hàng</a>
+              <a href="{% url 'trace' %}"> Tra cứu mã lô (FEFO)</a>
+              {% endif %}
+              <hr>
+              <form method="post" action="{% url 'logout' %}">{% csrf_token %}
+                <button type="submit" class="vh-logout-btn">Đăng xuất</button>
+              </form>
+            </div>
+          </div>
+          {% else %}
+          <a class="vh-account-trigger" href="{% url 'login' %}">
+            <span class="vh-acc-icon">👤</span>
+            <div class="vh-acc-text">
+              <span class="vh-acc-small">Đăng nhập/ Đăng ký</span>
+              <span class="vh-acc-bold">Tài khoản ▾</span>
+            </div>
+          </a>
+          {% endif %}
+        </div>
+
+        <!-- Khối giỏ hàng -->
+        <a class="vh-cart-btn" href="{% url 'cart' %}">
+          <div class="vh-cart-icon-wrap">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="8" cy="21" r="1"></circle>
+              <circle cx="19" cy="21" r="1"></circle>
+              <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path>
+            </svg>
+            <span class="vh-cart-badge">{% if cart_count %}{{ cart_count }}{% else %}0{% endif %}</span>
+          </div>
+          <span class="vh-cart-text">Giỏ hàng</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Thanh Menu Danh mục (Navigation Bar trắng) -->
+  <nav class="vh-menu-bar" aria-label="Menu danh mục chính">
+    <div class="wrap vh-menu-inner">
+      <a class="vh-menu-item {% if request.path == '/' %}active{% endif %}" href="{% url 'home' %}">
+        TRANG CHỦ
+      </a>
+      <a class="vh-menu-item {% if request.path == '/san-pham/' and not request.GET.category %}active{% endif %}"
+        href="{% url 'product_list' %}">
+        TẤT CẢ SẢN PHẨM
+      </a>
+      {% if nav_categories %}
+      {% for c in nav_categories %}
+      <a class="vh-menu-item {% if request.GET.category == c.slug %}active{% endif %}"
+        href="{% url 'product_list' %}?category={{ c.slug }}">
+        {{ c.name|upper }}
+      </a>
+      {% endfor %}
+      {% endif %}
+      {% if user.is_staff %}
+      <a class="vh-menu-item vh-menu-highlight {% if request.path == '/truy-xuat/' %}active{% endif %}"
+        href="{% url 'trace' %}">
+        TRUY XUẤT LÔ (FEFO)
+      </a>
+      {% endif %}
+      <a class="vh-menu-item {% if request.path == '/gioi-thieu/' %}active{% endif %}" href="{% url 'about' %}">
+        GIỚI THIỆU
+      </a>
+    </div>
+  </nav>
+
+  {% if messages %}
+  <div class="wrap messages" role="status">
+    {% for message in messages %}<p class="msg msg-{{ message.tags }}">{{ message }}</p>{% endfor %}
+  </div>
+  {% endif %}
+
+  <main id="main" class="wrap main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer chuẩn TMĐT phong cách Vitamin House -->
+  <footer class="vh-footer">
+    <div class="wrap vh-footer-top">
+      <div class="vh-foot-col vh-col-brand">
+        <div class="vh-foot-logo">
+          <span class="vh-foot-logo-name">NUTRISNACK</span>
+          <span class="vh-foot-logo-sub">NÔNG SẢN SẠCH & DINH DƯỠNG LÀNH</span>
+        </div>
+        <p class="vh-foot-desc">
+          Hệ thống phân phối trái cây sấy thăng hoa và hạt dinh dưỡng cao cấp tại Việt Nam.
+          Mỗi túi sản phẩm đều tích hợp mã kiểm định và truy xuất nguồn gốc lô hàng theo nguyên tắc FEFO.
+        </p>
+        <div class="vh-cert-badges">
+          <span>VietGAP</span>
+          <span>HACCP</span>
+          <span>ISO 22000</span>
+          <span>OCOP 4★</span>
+        </div>
+      </div>
+      <div class="vh-foot-col">
+        <h4 class="vh-foot-title">DANH MỤC NỔI BẬT</h4>
+        <ul class="vh-foot-links">
+          <li><a href="{% url 'product_list' %}?category=trai-cay-say-thang-hoa">Trái cây sấy thăng hoa</a></li>
+          <li><a href="{% url 'product_list' %}?category=hat-dinh-duong">Hạt dinh dưỡng cao cấp</a></li>
+          <li><a href="{% url 'product_list' %}?category=trail-mix-granola">Granola & Trail Mix</a></li>
+          <li><a href="{% url 'product_list' %}?category=combo-qua-tang">Hộp quà & Combo biếu tặng</a></li>
+        </ul>
+      </div>
+      <div class="vh-foot-col">
+        <h4 class="vh-foot-title">CHÍNH SÁCH BÁN HÀNG</h4>
+        <ul class="vh-foot-links">
+          <li><a href="{% url 'policy_returns' %}">Chính sách đổi trả & hoàn tiền</a></li>
+          <li><a href="{% url 'policy_privacy' %}">Chính sách bảo mật thông tin</a></li>
+          <li><a href="{% url 'policy_terms' %}">Điều khoản & Điều kiện</a></li>
+          <li><a href="{% url 'about' %}">Về NutriSnack Việt Nam</a></li>
+        </ul>
+      </div>
+      <div class="vh-foot-col">
+        <h4 class="vh-foot-title">THÔNG TIN LIÊN HỆ</h4>
+        <p><strong>Trụ sở:</strong> Khu Công nghệ cao, TP. Thủ Đức, TP. Hồ Chí Minh</p>
+        <p>✉️ <strong>Email:</strong> <a href="mailto:{{ ADMIN_EMAIL|default:SITE_CONTACT_EMAIL }}">{{
+            SITE_CONTACT_EMAIL }}</a></p>
+        {% if SITE_HOTLINE %}<p>📞 <strong>Hotline:</strong> <span class="hotline-hl">{{ SITE_HOTLINE }}</span> (8h00 -
+          21h30)</p>{% endif %}
+        <div class="vh-pay-methods">
+          <span class="vh-pay-tag">COD (Tiền mặt)</span>
+          <span class="vh-pay-tag">VietQR</span>
+          <span class="vh-pay-tag">Internet Banking</span>
+        </div>
+      </div>
+    </div>
+    <div class="vh-footer-bottom">
+      <div class="wrap vh-foot-bot-inner">
+        <p>© 2026 NutriSnack Store. Nhóm 6 - Đề tài KINH DOANH HẠT DINH DƯỠNG VÀ TRÁI CÂY SẤY THĂNG HOA TRÊN SÀN THƯƠNG
+          MẠI ĐIỆN TỬ.</p>
+      </div>
+    </div>
+  </footer>
+</body>
+
+</html>

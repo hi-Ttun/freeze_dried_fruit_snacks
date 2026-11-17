@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Báo cáo | NutriSnack{% endblock %}
+{% block content %}
+<h1>Báo cáo bán hàng</h1>
+<p class="muted">Doanh thu tính trên các đơn chưa bị hủy hoặc hoàn trả.</p>
+
+<div class="kpis">
+  <div><span class="muted">Doanh thu 14 ngày</span><strong>{{ revenue_14d|vnd }}</strong></div>
+  <div><span class="muted">Số đơn 14 ngày</span><strong>{{ orders_14d }}</strong></div>
+  <div><span class="muted">Giá trị trung bình mỗi đơn</span><strong>{{ aov|vnd }}</strong></div>
+  <div><span class="muted">Doanh thu tháng này</span><strong>{{ month_revenue|vnd }}</strong></div>
+  <div><span class="muted">Đơn chờ xác nhận</span><strong>{{ pending_count }}</strong></div>
+</div>
+
+<h2 class="h3">Doanh thu theo ngày</h2>
+<ol class="bars">
+  {% for d in series %}
+  <li>
+    <span class="bar-day">{{ d.day|date:"d/m" }}</span>
+    <span class="chart-bar"><span style="--bar-w: {{ d.pct }}%;"></span></span>
+    <span class="bar-val">{{ d.revenue|vnd }} ({{ d.orders }} đơn)</span>
+  </li>
+  {% endfor %}
+</ol>
+
+<div class="order-grid">
+  <section>
+    <h2 class="h3">Sản phẩm bán chạy</h2>
+    {% if top_products %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Sản phẩm</th>
+          <th>Đã bán</th>
+          <th>Doanh thu</th>
+        </tr>
+      </thead>
+      <tbody>{% for t in top_products %}<tr>
+          <td data-label="Sản phẩm">{{ t.product_name }}</td>
+          <td data-label="Đã bán">{{ t.qty }}</td>
+          <td data-label="Doanh thu">{{ t.revenue|vnd }}</td>
+        </tr>{% endfor %}</tbody>
+    </table>
+    {% else %}<p class="muted">Chưa có dữ liệu.</p>{% endif %}
+
+    <h2 class="h3">Đơn theo trạng thái</h2>
+    <ul class="plain">{% for s in status_counts %}<li>{{ s.label }} <span class="right">{{ s.n }}</span></li>{% empty %}
+      <li class="muted">Chưa có đơn hàng.</li>{% endfor %}
+    </ul>
+  </section>
+  <section>
+    <h2 class="h3">Lô sắp hết hạn (trong 60 ngày) hoặc đã hết hạn</h2>
+    {% if expiring %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Mã lô</th>
+          <th>Sản phẩm</th>
+          <th>Còn</th>
+          <th>Hạn dùng</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for lot in expiring %}
+        <tr>
+          <td data-label="Mã lô">{{ lot.code }}</td>
+          <td data-label="Sản phẩm">{{ lot.variant.product.name }} ({{ lot.variant.label }})</td>
+          <td data-label="Còn">{{ lot.quantity_left }}</td>
+          <td data-label="Hạn dùng">{{ lot.expires_on|date:"d/m/Y" }}{% if lot.days_left < 0 %} <span
+              class="tag tag-out">Hết hạn</span>{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}<p class="muted">Không có lô nào cần chú ý.</p>{% endif %}
+  </section>
+</div>
+{% endblock %}

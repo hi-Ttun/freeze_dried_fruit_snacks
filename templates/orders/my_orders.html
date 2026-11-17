@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Đơn của tôi | NutriSnack{% endblock %}
+{% block content %}
+<h1>Đơn của tôi</h1>
+{% if orders %}
+<table class="table">
+  <thead><tr><th>Mã đơn</th><th>Ngày đặt</th><th>Tổng tiền</th><th>Trạng thái</th></tr></thead>
+  <tbody>
+  {% for o in orders %}
+    <tr>
+      <td data-label="Mã đơn"><a href="{% url 'order_detail' o.code %}">{{ o.code }}</a></td>
+      <td data-label="Ngày đặt">{{ o.created_at|date:"d/m/Y" }}</td>
+      <td data-label="Tổng tiền">{{ o.total|vnd }}</td>
+      <td data-label="Trạng thái">{{ o.get_status_display }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="empty">Bạn chưa có đơn hàng nào. <a href="{% url 'product_list' %}">Xem sản phẩm</a>.</p>
+{% endif %}
+{% endblock %}

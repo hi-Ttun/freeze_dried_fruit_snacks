@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }} | NutriSnack{% endblock %}
+{% block meta_description %}{{ product.short_description }}{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{% url 'product_list' %}">Sản phẩm</a> / <a href="{% url 'product_list' %}?category={{ product.category.slug }}">{{ product.category.name }}</a></p>
+<div class="detail">
+  <div class="detail-img" style="background: {{ product.tile_color }}">
+    {% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.name }}">{% else %}<span class="tile-mark" aria-hidden="true">{{ product.name|slice:":1" }}</span>{% endif %}
+  </div>
+  <div class="detail-info">
+    <h1>{{ product.name }}</h1>
+    <p class="lead">{{ product.short_description }}</p>
+
+    <h2 class="h3">Chọn quy cách</h2>
+    {% for v in variants %}
+    <div class="variant">
+      <div>
+        <strong>{{ v.label }}</strong>
+        <span class="price">{{ v.price|vnd }}</span>
+        {% if v.available %}
+          <p class="muted">Còn {{ v.available }} sản phẩm.{% if v.next_lot_obj %} Lô <a href="{% url 'trace' %}?code={{ v.next_lot_obj.code }}">{{ v.next_lot_obj.code }}</a>, hạn dùng {{ v.next_lot_obj.expires_on|date:"d/m/Y" }}.{% endif %}</p>
+        {% else %}
+          <p><span class="tag tag-out">Hết hàng</span></p>
+        {% endif %}
+      </div>
+      <form method="post" action="{% url 'cart_add' v.id %}" class="add">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.path }}">
+        <label class="sr" for="qty-{{ v.id }}">Số lượng {{ v.label }}</label>
+        <input id="qty-{{ v.id }}" type="number" name="quantity" value="1" min="1" max="{% if v.available and v.available < max_qty %}{{ v.available }}{% else %}{{ max_qty }}{% endif %}"{% if not v.available %} disabled{% endif %}>
+        <button class="btn btn-primary" type="submit"{% if not v.available %} disabled{% endif %}>Thêm vào giỏ</button>
+      </form>
+    </div>
+    {% empty %}
+    <p class="muted">Sản phẩm này tạm thời chưa có quy cách để bán.</p>
+    {% endfor %}
+    <p class="muted small">Chỉ bán lô còn tối thiểu {{ min_shelf_days }} ngày hạn dùng.</p>
+  </div>
+</div>
+
+<section class="specs">
+  {% if product.description %}<div><h2 class="h3">Mô tả</h2>{{ product.description|linebreaks }}</div>{% endif %}
+  {% if product.ingredients %}<div><h2 class="h3">Thành phần</h2><p>{{ product.ingredients }}</p></div>{% endif %}
+  {% if product.nutrition %}<div><h2 class="h3">Giá trị dinh dưỡng</h2>{{ product.nutrition|linebreaks }}</div>{% endif %}
+  {% if product.origin %}<div><h2 class="h3">Xuất xứ</h2><p>{{ product.origin }}</p></div>{% endif %}
+  {% if product.certificates %}<div><h2 class="h3">Chứng nhận và kiểm nghiệm</h2><p>{{ product.certificates }}</p></div>{% endif %}
+</section>
+
+{% if related %}
+<section class="block">
+  <h2>Sản phẩm cùng nhóm</h2>
+  <div class="tiles">{% for p in related %}{% include "shop/_product_tile.html" %}{% endfor %}</div>
+</section>
+{% endif %}
+{% endblock %}

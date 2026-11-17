@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Tra cứu đơn hàng | NutriSnack{% endblock %}
+{% block content %}
+<h1>Tra cứu đơn hàng</h1>
+<p class="lead">Nhập mã đơn hàng và số điện thoại đã dùng khi đặt hàng.</p>
+<form method="post" class="form narrow">
+  {% csrf_token %}
+  {% include "_form_fields.html" %}
+  <button class="btn btn-primary" type="submit">Xem đơn hàng</button>
+</form>
+{% endblock %}

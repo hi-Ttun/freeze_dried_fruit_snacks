@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Thanh toán | NutriSnack{% endblock %}
+{% block content %}
+<h1>Thanh toán</h1>
+<div class="checkout">
+  <form method="post" class="form">
+    {% csrf_token %}
+    {% include "_form_fields.html" %}
+    <button class="btn btn-primary" type="submit">Đặt hàng</button>
+  </form>
+  <aside class="summary">
+    <h2 class="h3">Đơn hàng của bạn</h2>
+    <ul class="plain">
+      {% for l in lines %}<li>{{ l.variant.product.name }} ({{ l.variant.label }}) x{{ l.quantity }} <span class="right">{{ l.line_total|vnd }}</span></li>{% endfor %}
+    </ul>
+    <p>Tạm tính <strong>{{ subtotal|vnd }}</strong></p>
+    <p class="muted small">Phí vận chuyển: {{ fee_urban|vnd }} nội thành TP.HCM và Hà Nội, {{ fee_other|vnd }} các tỉnh thành khác. Miễn phí cho đơn từ {{ free_ship_threshold|vnd }}. Phí được tính vào tổng tiền khi bạn đặt hàng.</p>
+  </aside>
+</div>
+{% endblock %}

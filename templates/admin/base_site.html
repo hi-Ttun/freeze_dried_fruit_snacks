@@ -1,0 +1,25 @@
+{% extends "admin/base.html" %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block branding %}
+<div style="display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 4px 0;">
+  <div style="display: flex; align-items: center; gap: 10px;">
+    <span style="font-size: 24px;">🌿</span>
+    <h1 id="site-name" style="margin: 0; font-size: 19px; font-weight: 800;">
+      <a href="{% url 'admin:index' %}" style="color: #ffffff; text-decoration: none;">NutriSnack - Trang Quản Trị &amp; Vận Hành</a>
+    </h1>
+  </div>
+  <div style="display: flex; align-items: center; gap: 10px; font-size: 13px;">
+    <a href="{% url 'home' %}" target="_blank" style="background: rgba(255,255,255,0.2); color: #ffffff; padding: 5px 12px; border-radius: 4px; text-decoration: none; font-weight: 600; border: 1px solid rgba(255,255,255,0.3);">
+      🏪 Mở Website Cửa hàng ↗
+    </a>
+    <a href="{% url 'dashboard' %}" style="background: #f4b400; color: #16261d; padding: 5px 12px; border-radius: 4px; text-decoration: none; font-weight: 800; box-shadow: 0 2px 6px rgba(0,0,0,0.2);">
+      📊 Báo cáo Bán hàng &amp; Kho FEFO
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}
+
