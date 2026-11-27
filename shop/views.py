@@ -1,4 +1,5 @@
 import json
+import os
 from datetime import timedelta
 
 from django.conf import settings
@@ -142,15 +143,61 @@ def chat_lead(request):
     if not phone or len(phone) < 9:
         return JsonResponse({"success": False, "message": "Vui lòng nhập số điện thoại hợp lệ (từ 10 chữ số)."}, status=400)
 
-    ConsultationLead.objects.create(
+    lead = ConsultationLead.objects.create(
         customer_name=name,
         phone=phone,
         note=note or "Yêu cầu tư vấn trực tiếp từ Chatbot AI",
         status=ConsultationLead.Status.NEW
     )
 
+    # 1. Ghi log nổi bật ra màn hình console máy chủ
+    print(f"\n{'='*60}\n🔔 [LEAD MỚI] KHÁCH HÀNG YÊU CẦU TƯ VẤN TRỰC TIẾP!\n📞 SĐT: {phone}\n👤 Tên: {name or 'Khách vãng lai'}\n📝 Nhu cầu: {lead.note}\n⏰ Thời gian: {timezone.localtime(lead.created_at):%d/%m/%Y %H:%M:%S}\n{'='*60}\n")
+
+    # 2. Gửi Email thông báo tự động đến Admin
+    try:
+        from django.core.mail import send_mail
+        admin_email = getattr(settings, "ADMIN_EMAIL", "") or getattr(settings, "SITE_CONTACT_EMAIL", "")
+        if admin_email:
+            send_mail(
+                subject=f"[NutriSnack] 🔔 Có khách hàng yêu cầu tư vấn mới: {phone}",
+                message=(
+                    f"Có khách hàng vừa để lại số điện thoại yêu cầu tư vấn trên website!\n\n"
+                    f"• Số điện thoại: {phone}\n"
+                    f"• Họ tên: {name or 'Khách vãng lai'}\n"
+                    f"• Nhu cầu: {lead.note}\n"
+                    f"• Thời gian: {timezone.localtime(lead.created_at):%d/%m/%Y %H:%M}\n\n"
+                    f"Vui lòng đăng nhập trang quản trị để liên hệ và xử lý:\n"
+                    f"http://127.0.0.1:8000/admin/shop/consultationlead/\n"
+                ),
+                from_email=settings.DEFAULT_FROM_EMAIL if hasattr(settings, "DEFAULT_FROM_EMAIL") else None,
+                recipient_list=[admin_email],
+                fail_silently=True,
+            )
+    except Exception as e:
+        pass
+
+    # 3. Gửi tin nhắn qua Telegram Bot (nếu có cấu hình)
+    tg_token = getattr(settings, "TELEGRAM_BOT_TOKEN", "") or os.environ.get("TELEGRAM_BOT_TOKEN", "")
+    tg_chat_id = getattr(settings, "TELEGRAM_CHAT_ID", "") or os.environ.get("TELEGRAM_CHAT_ID", "")
+    if tg_token and tg_chat_id:
+        try:
+            import requests
+            tg_url = f"https://api.telegram.org/bot{tg_token}/sendMessage"
+            tg_text = (
+                f"🔔 *[NutriSnack] KHÁCH YÊU CẦU TƯ VẤN MỚI!*\n\n"
+                f"📞 *SĐT:* `{phone}`\n"
+                f"👤 *Khách:* {name or 'Khách vãng lai'}\n"
+                f"📝 *Nội dung:* {lead.note}\n"
+                f"⏰ *Lúc:* {timezone.localtime(lead.created_at):%d/%m/%Y %H:%M}\n\n"
+                f"👉 [Mở trang quản trị](http://127.0.0.1:8000/admin/shop/consultationlead/)"
+            )
+            requests.post(tg_url, json={"chat_id": tg_chat_id, "text": tg_text, "parse_mode": "Markdown"}, timeout=3)
+        except Exception:
+            pass
+
     return JsonResponse({
         "success": True,
         "message": f"Dạ NutriSnack đã ghi nhận số điện thoại {phone}! Chuyên viên tư vấn sẽ liên hệ lại ngay trong ít phút ạ."
     })
+
 

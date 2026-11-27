@@ -11,6 +11,11 @@
     </h1>
   </div>
   <div style="display: flex; align-items: center; gap: 10px; font-size: 13px;">
+    {% if new_leads_count %}
+    <a href="{% url 'admin:shop_consultationlead_changelist' %}?status__exact=new" style="background: #e63946; color: #ffffff; padding: 5px 12px; border-radius: 999px; text-decoration: none; font-weight: 800; box-shadow: 0 0 10px rgba(230, 57, 70, 0.7);">
+      🔔 {{ new_leads_count }} Yêu cầu tư vấn mới!
+    </a>
+    {% endif %}
     <a href="{% url 'home' %}" target="_blank" style="background: rgba(255,255,255,0.2); color: #ffffff; padding: 5px 12px; border-radius: 4px; text-decoration: none; font-weight: 600; border: 1px solid rgba(255,255,255,0.3);">
       🏪 Mở Website Cửa hàng ↗
     </a>

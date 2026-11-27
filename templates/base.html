@@ -28,6 +28,11 @@
         <span class="admin-user-tag">Xin chào, {{ user.username }}</span>
       </div>
       <div class="admin-tools">
+        {% if new_leads_count %}
+        <a href="{% url 'admin:shop_consultationlead_changelist' %}?status__exact=new" class="admin-tool-link" style="background: #e63946; color: #ffffff; font-weight: 800;">
+          🔔 {{ new_leads_count }} khách cần tư vấn!
+        </a>
+        {% endif %}
         <a href="{% url 'admin:index' %}" class="admin-tool-link primary">Trang Quản trị (Admin Portal)</a>
         <a href="{% url 'dashboard' %}" class="admin-tool-link">Báo cáo Doanh thu &amp; Kho</a>
         <a href="{% url 'trace' %}" class="admin-tool-link">Tra cứu mã lô (FEFO)</a>
