@@ -29,7 +29,8 @@
       </div>
       <div class="admin-tools">
         {% if new_leads_count %}
-        <a href="{% url 'admin:shop_consultationlead_changelist' %}?status__exact=new" class="admin-tool-link" style="background: #e63946; color: #ffffff; font-weight: 800;">
+        <a href="{% url 'admin:shop_consultationlead_changelist' %}?status__exact=new" class="admin-tool-link"
+          style="background: #e63946; color: #ffffff; font-weight: 800;">
           🔔 {{ new_leads_count }} khách cần tư vấn!
         </a>
         {% endif %}
@@ -83,7 +84,11 @@
             <option value="">Tất cả danh mục</option>
             {% if nav_categories %}
             {% for c in nav_categories %}
-            <option value="{{ c.slug }}" {% if request.GET.category == c.slug %}selected{% endif %}>{{ c.name }}</option>
+              {% if request.GET.category == c.slug %}
+              <option value="{{ c.slug }}" selected>{{ c.name }}</option>
+              {% else %}
+              <option value="{{ c.slug }}">{{ c.name }}</option>
+              {% endif %}
             {% endfor %}
             {% endif %}
           </select>
@@ -109,10 +114,10 @@
               <span class="vh-acc-bold"><strong>{{ user.username|truncatechars:10 }}</strong> ▾</span>
             </div>
             <div class="vh-dropdown">
-              <a href="{% url 'my_orders' %}">📦 Đơn hàng của tôi</a>
+              <a href="{% url 'my_orders' %}"> Đơn hàng của tôi</a>
               {% if user.is_staff %}
               <a href="{% url 'admin:index' %}"> Trang Quản trị (Admin)</a>
-              <a href="{% url 'dashboard' %}">📊 Báo cáo bán hàng</a>
+              <a href="{% url 'dashboard' %}"> Báo cáo bán hàng</a>
               <a href="{% url 'trace' %}"> Tra cứu mã lô (FEFO)</a>
               {% endif %}
               <hr>
@@ -230,8 +235,7 @@
         <h4 class="vh-foot-title">THÔNG TIN LIÊN HỆ</h4>
         <p><strong>Trụ sở:</strong> Khu Công nghệ cao, TP. Thủ Đức, TP. Hồ Chí Minh</p>
         <p>✉️ <strong>Email:</strong> <a href="mailto:{{ ADMIN_EMAIL|default:SITE_CONTACT_EMAIL }}">{{ SITE_CONTACT_EMAIL }}</a></p>
-        {% if SITE_HOTLINE %}<p>📞 <strong>Hotline:</strong> <span class="hotline-hl">{{ SITE_HOTLINE }}</span> (8h00 -
-          21h30)</p>{% endif %}
+        {% if SITE_HOTLINE %}<p>📞 <strong>Hotline:</strong> <span class="hotline-hl">{{ SITE_HOTLINE }}</span> (8h00 - 21h30)</p>{% endif %}
         <p>💬 <strong>Zalo tư vấn:</strong> <a href="{{ SITE_ZALO }}" target="_blank" rel="noopener noreferrer" style="color: #ffd166; font-weight: 700;">0827721974</a></p>
         <div class="vh-pay-methods">
           <span class="vh-pay-tag">COD (Tiền mặt)</span>
