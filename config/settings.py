@@ -159,4 +159,6 @@ PAYOS_CHECKSUM_KEY = os.environ.get("PAYOS_CHECKSUM_KEY", "")
 
 SITE_CONTACT_EMAIL = os.environ.get("SITE_CONTACT_EMAIL", "nutrisnack@gmail.com")
 ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "tientun1304@gmail.com")
-SITE_HOTLINE = os.environ.get("SITE_HOTLINE", "")
+SITE_HOTLINE = os.environ.get("SITE_HOTLINE", "0901234567")
+SITE_ZALO = os.environ.get("SITE_ZALO", "https://zalo.me/0901234567")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")

@@ -1,0 +1,277 @@
+<!-- NutriSnack AI Chatbot Widget -->
+<div id="nutri-chat-widget" class="nutri-chat-widget">
+  <!-- Nút tròn mở chat nổi -->
+  <button id="nutri-chat-btn" class="nutri-chat-trigger" title="Chat với Trợ lý AI NutriSnack" aria-label="Mở chat AI">
+    <div class="nutri-chat-badge">AI</div>
+    <svg class="chat-icon-svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+    </svg>
+    <span class="nutri-chat-btn-text">Hỏi Trợ lý AI</span>
+  </button>
+
+  <!-- Cửa sổ Chat Popup -->
+  <div id="nutri-chat-box" class="nutri-chat-box" style="display: none;">
+    <!-- Header -->
+    <div class="nutri-chat-header">
+      <div class="nutri-chat-header-info">
+        <div class="nutri-chat-avatar">🌿</div>
+        <div>
+          <div class="nutri-chat-title">NutriBot - Trợ lý AI</div>
+          <div class="nutri-chat-status">
+            <span class="status-dot"></span> Trực tuyến 24/7 • Sẵn sàng hỗ trợ
+          </div>
+        </div>
+      </div>
+      <button id="nutri-chat-close" class="nutri-chat-close-btn" aria-label="Đóng cửa sổ chat">&times;</button>
+    </div>
+
+    <!-- Body tin nhắn -->
+    <div id="nutri-chat-messages" class="nutri-chat-messages">
+      <!-- Lời chào đầu tiên -->
+      <div class="chat-msg bot-msg">
+        <div class="msg-avatar">🌿</div>
+        <div class="msg-bubble">
+          <p>Xin chào! Mình là <strong>NutriBot</strong> - Trợ lý AI của NutriSnack 🌱</p>
+          <p>Mình có thể giúp bạn giải đáp hương vị, độ ngọt, công nghệ sấy thăng hoa -40°C hoặc hỗ trợ kết nối tư vấn viên khi cần ạ!</p>
+          
+          <div class="chat-quick-suggestions">
+            <span class="suggestion-chip" data-msg="Vị sầu riêng sấy thế nào, có ngọt không?">Durian Sầu riêng sấy có ngọt không?</span>
+            <span class="suggestion-chip" data-msg="Dâu tây sấy thăng hoa vị ra sao?">🍓 Dâu tây sấy ăn vị thế nào?</span>
+            <span class="suggestion-chip" data-msg="Sản phẩm nào phù hợp ăn kiêng, giảm cân?">🥗 Sản phẩm ăn kiêng / Eat Clean?</span>
+            <span class="suggestion-chip" data-msg="Chính sách phí vận chuyển và freeship?">🚚 Phí ship & Freeship 500k?</span>
+            <span class="suggestion-chip handoff-chip" data-msg="Tôi muốn gặp nhân viên tư vấn trực tiếp">👨‍💼 Gặp nhân viên tư vấn</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Indicator đang gõ -->
+    <div id="nutri-chat-typing" class="nutri-chat-typing" style="display: none;">
+      <div class="msg-avatar">🌿</div>
+      <div class="typing-bubble">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+
+    <!-- Footer nhập liệu -->
+    <div class="nutri-chat-footer">
+      <form id="nutri-chat-form" class="nutri-chat-input-row" onsubmit="return false;">
+        <input type="text" id="nutri-chat-input" placeholder="Hỏi về sản phẩm, hương vị, dinh dưỡng..." autocomplete="off" maxlength="300" />
+        <button type="submit" id="nutri-chat-send" aria-label="Gửi tin nhắn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </form>
+      <div class="nutri-chat-credit">NutriSnack AI • Tự động chuyển tư vấn viên khi cần</div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const chatBtn = document.getElementById("nutri-chat-btn");
+  const chatBox = document.getElementById("nutri-chat-box");
+  const chatClose = document.getElementById("nutri-chat-close");
+  const chatMessages = document.getElementById("nutri-chat-messages");
+  const chatInput = document.getElementById("nutri-chat-input");
+  const chatForm = document.getElementById("nutri-chat-form");
+  const chatTyping = document.getElementById("nutri-chat-typing");
+  
+  let chatHistory = [];
+
+  // Toggle bật/mở chat
+  chatBtn.addEventListener("click", () => {
+    const isHidden = chatBox.style.display === "none";
+    chatBox.style.display = isHidden ? "flex" : "none";
+    if (isHidden) {
+      chatInput.focus();
+      scrollToBottom();
+    }
+  });
+
+  chatClose.addEventListener("click", () => {
+    chatBox.style.display = "none";
+  });
+
+  function scrollToBottom() {
+    setTimeout(() => {
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }, 50);
+  }
+
+  // Format link và in đậm markdown đơn giản
+  function formatText(text) {
+    if (!text) return "";
+    let escaped = text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+    
+    // In đậm **text**
+    escaped = escaped.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+    // Xuống dòng
+    escaped = escaped.replace(/\n/g, "<br>");
+    return escaped;
+  }
+
+  // Thêm tin nhắn vào khung chat
+  function appendMessage(sender, text, isHandoff = false, handoffInfo = null, suggestions = []) {
+    const msgDiv = document.createElement("div");
+    msgDiv.className = `chat-msg ${sender}-msg`;
+
+    if (sender === "bot") {
+      let contentHtml = `<div class="msg-avatar">🌿</div><div class="msg-bubble"><div>${formatText(text)}</div>`;
+      
+      // Nếu là luồng Human Handoff -> Hiển thị Card tư vấn viên
+      if (isHandoff) {
+        const hotline = (handoffInfo && handoffInfo.hotline) ? handoffInfo.hotline : "{{ SITE_HOTLINE|default:'0901234567' }}";
+        const zalo = (handoffInfo && handoffInfo.zalo) ? handoffInfo.zalo : `https://zalo.me/${hotline}`;
+        
+        contentHtml += `
+          <div class="handoff-card">
+            <div class="handoff-title">📞 Kết nối Chuyên viên tư vấn:</div>
+            <div class="handoff-actions">
+              <a href="tel:${hotline}" class="handoff-btn hotline-btn">
+                <span>📞 Gọi Hotline: <strong>${hotline}</strong></span>
+              </a>
+              <a href="${zalo}" target="_blank" rel="noopener noreferrer" class="handoff-btn zalo-btn">
+                <span>💬 Chat Zalo tư vấn viên</span>
+              </a>
+            </div>
+            <div class="lead-form-box">
+              <div class="lead-prompt">Hoặc để lại SĐT để shop gọi lại:</div>
+              <div class="lead-input-group">
+                <input type="tel" class="lead-phone-input" placeholder="Nhập số điện thoại của bạn..." maxlength="15" />
+                <button type="button" class="lead-submit-btn">Gửi yêu cầu</button>
+              </div>
+              <div class="lead-msg" style="display:none;"></div>
+            </div>
+          </div>
+        `;
+      }
+
+      // Thêm gợi ý câu hỏi nếu có
+      if (suggestions && suggestions.length > 0) {
+        contentHtml += `<div class="chat-quick-suggestions">`;
+        suggestions.forEach(s => {
+          contentHtml += `<span class="suggestion-chip" data-msg="${s}">${s}</span>`;
+        });
+        contentHtml += `</div>`;
+      }
+
+      contentHtml += `</div>`;
+      msgDiv.innerHTML = contentHtml;
+    } else {
+      msgDiv.innerHTML = `<div class="msg-bubble user-bubble">${formatText(text)}</div>`;
+    }
+
+    chatMessages.appendChild(msgDiv);
+    scrollToBottom();
+
+    // Gắn sự kiện cho các nút trong handoff card vừa thêm
+    if (isHandoff) {
+      const leadSubmit = msgDiv.querySelector(".lead-submit-btn");
+      const leadInput = msgDiv.querySelector(".lead-phone-input");
+      const leadMsg = msgDiv.querySelector(".lead-msg");
+
+      if (leadSubmit && leadInput) {
+        leadSubmit.addEventListener("click", () => {
+          const phone = leadInput.value.trim();
+          if (!phone || phone.length < 9) {
+            leadMsg.style.display = "block";
+            leadMsg.className = "lead-msg error";
+            leadMsg.innerText = "Vui lòng nhập đúng số điện thoại (từ 10 chữ số).";
+            return;
+          }
+
+          leadSubmit.disabled = true;
+          leadSubmit.innerText = "Đang gửi...";
+
+          fetch("{% url 'chat_lead' %}", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ phone: phone, note: "Yêu cầu tư vấn từ cuộc trò chuyện AI" })
+          })
+          .then(r => r.json())
+          .then(data => {
+            leadMsg.style.display = "block";
+            if (data.success) {
+              leadMsg.className = "lead-msg success";
+              leadMsg.innerText = "✅ " + data.message;
+              leadInput.style.display = "none";
+              leadSubmit.style.display = "none";
+            } else {
+              leadMsg.className = "lead-msg error";
+              leadMsg.innerText = data.message || "Có lỗi xảy ra, vui lòng thử lại.";
+              leadSubmit.disabled = false;
+              leadSubmit.innerText = "Gửi yêu cầu";
+            }
+          })
+          .catch(() => {
+            leadMsg.style.display = "block";
+            leadMsg.className = "lead-msg error";
+            leadMsg.innerText = "Không thể gửi dữ liệu, bạn vui lòng gọi Hotline nhé!";
+            leadSubmit.disabled = false;
+            leadSubmit.innerText = "Gửi yêu cầu";
+          });
+        });
+      }
+    }
+  }
+
+  // Gửi tin nhắn đến API
+  function sendMessage(text) {
+    if (!text || text.trim() === "") return;
+    const cleanText = text.trim();
+    chatInput.value = "";
+
+    // Hiển thị tin nhắn người dùng
+    appendMessage("user", cleanText);
+    chatHistory.push({ sender: "user", text: cleanText });
+
+    // Hiển thị hiệu ứng bot đang soạn câu trả lời
+    chatTyping.style.display = "flex";
+    scrollToBottom();
+
+    fetch("{% url 'chat_message' %}", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: cleanText, history: chatHistory })
+    })
+    .then(r => r.json())
+    .then(data => {
+      chatTyping.style.display = "none";
+      const reply = data.reply || "Dạ NutriSnack sẵn sàng giải đáp mọi thắc mắc của bạn ạ!";
+      const isHandoff = data.is_handoff || false;
+      const handoffInfo = data.handoff_info || null;
+      const suggestions = data.suggestions || [];
+
+      appendMessage("bot", reply, isHandoff, handoffInfo, suggestions);
+      chatHistory.push({ sender: "bot", text: reply });
+    })
+    .catch(err => {
+      console.error(err);
+      chatTyping.style.display = "none";
+      appendMessage("bot", "Dạ hiện tại đường truyền đang gián đoạn một chút. Bạn có thể gọi trực tiếp Hotline {{ SITE_HOTLINE|default:'0901234567' }} để được hỗ trợ tức thì nhé!", true);
+    });
+  }
+
+  // Sự kiện gửi form
+  chatForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    sendMessage(chatInput.value);
+  });
+
+  // Sự kiện click vào suggestion chips
+  chatMessages.addEventListener("click", (e) => {
+    const chip = e.target.closest(".suggestion-chip");
+    if (chip) {
+      const msg = chip.getAttribute("data-msg") || chip.innerText;
+      sendMessage(msg);
+    }
+  });
+
+})();
+</script>

@@ -3,7 +3,7 @@ from datetime import timedelta
 from django.contrib import admin
 from django.utils import timezone
 
-from .models import Category, Lot, Product, Variant
+from .models import Category, ConsultationLead, Lot, Product, Variant
 
 admin.site.site_header = "NutriSnack - Quản trị"
 admin.site.site_title = "NutriSnack"
@@ -74,3 +74,17 @@ class LotAdmin(admin.ModelAdmin):
     @admin.display(description="Còn (ngày)", ordering="expires_on")
     def days_left_display(self, obj):
         return obj.days_left
+
+
+@admin.register(ConsultationLead)
+class ConsultationLeadAdmin(admin.ModelAdmin):
+    list_display = ("phone", "customer_name", "status", "created_at", "short_note")
+    list_filter = ("status", "created_at")
+    list_editable = ("status",)
+    search_fields = ("phone", "customer_name", "note")
+    readonly_fields = ("created_at",)
+
+    @admin.display(description="Lời nhắn / Nhu cầu")
+    def short_note(self, obj):
+        return (obj.note[:60] + "...") if len(obj.note) > 60 else obj.note
+

@@ -50,3 +50,38 @@ class ShopPagesTests(TestCase):
         today = timezone.localdate()
         Lot.objects.create(variant=self.variant, code="SHORT", produced_on=today, expires_on=today + timedelta(days=5), quantity_in=50)
         self.assertEqual(self.variant.stock, 10)
+
+    def test_chat_message_ai_response(self):
+        response = self.client.post(
+            reverse("chat_message"),
+            data='{"message": "Sầu riêng sấy có ngọt không?"}',
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("reply", data)
+        self.assertFalse(data.get("is_handoff", True))
+
+    def test_chat_message_triggers_human_handoff(self):
+        response = self.client.post(
+            reverse("chat_message"),
+            data='{"message": "Cho tôi gặp nhân viên tư vấn trực tiếp"}',
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data.get("is_handoff", False))
+        self.assertIn("handoff_info", data)
+
+    def test_chat_lead_submission(self):
+        from .models import ConsultationLead
+        response = self.client.post(
+            reverse("chat_lead"),
+            data='{"phone": "0912345678", "customer_name": "Nguyen Van A", "note": "Hỏi giá sỉ 100 hộp"}',
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        lead = ConsultationLead.objects.filter(phone="0912345678").first()
+        self.assertIsNotNone(lead)
+        self.assertEqual(lead.customer_name, "Nguyen Van A")
+

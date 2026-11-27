@@ -119,3 +119,27 @@ class Lot(models.Model):
     @property
     def days_left(self):
         return (self.expires_on - timezone.localdate()).days
+
+
+class ConsultationLead(models.Model):
+    """Thông tin yêu cầu tư vấn viên từ khách hàng qua Chatbot AI."""
+
+    class Status(models.TextChoices):
+        NEW = "new", "Mới tiếp nhận"
+        CONTACTED = "contacted", "Đã liên hệ"
+        DONE = "done", "Hoàn tất"
+
+    customer_name = models.CharField("Họ tên", max_length=120, blank=True)
+    phone = models.CharField("Số điện thoại", max_length=20)
+    note = models.TextField("Nhu cầu tư vấn / Lời nhắn", blank=True)
+    status = models.CharField("Trạng thái", max_length=20, choices=Status.choices, default=Status.NEW)
+    created_at = models.DateTimeField("Thời điểm gửi", auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Yêu cầu tư vấn (Lead)"
+        verbose_name_plural = "Yêu cầu tư vấn (Lead)"
+
+    def __str__(self):
+        return f"{self.phone} - {self.customer_name or 'Khách vãng lai'} ({self.get_status_display()})"
+

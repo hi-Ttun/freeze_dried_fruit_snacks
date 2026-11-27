@@ -1,12 +1,17 @@
+import json
 from datetime import timedelta
 
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.db.models import Min, Q, Sum
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 
-from .models import Category, Lot, Product
+from .ai_chatbot import get_chat_response
+from .models import Category, ConsultationLead, Lot, Product
 
 SORTS = {
     "new": "-created_at",
@@ -103,3 +108,49 @@ def trace(request):
     if code:
         lot = Lot.objects.select_related("variant__product").filter(code__iexact=code).first()
     return render(request, "shop/trace.html", {"code": code, "lot": lot})
+
+
+@csrf_exempt
+@require_POST
+def chat_message(request):
+    """Tiếp nhận câu hỏi từ Chatbot AI và phản hồi thông tin."""
+    try:
+        data = json.loads(request.body.decode("utf-8")) if request.body else {}
+    except Exception:
+        data = request.POST
+
+    message = data.get("message", "").strip()
+    history = data.get("history", [])
+
+    response_data = get_chat_response(message, history=history)
+    return JsonResponse(response_data)
+
+
+@csrf_exempt
+@require_POST
+def chat_lead(request):
+    """Lưu thông tin yêu cầu tư vấn viên gọi lại (Human Handoff Lead)."""
+    try:
+        data = json.loads(request.body.decode("utf-8")) if request.body else {}
+    except Exception:
+        data = request.POST
+
+    phone = data.get("phone", "").strip()
+    name = data.get("customer_name", "").strip()
+    note = data.get("note", "").strip()
+
+    if not phone or len(phone) < 9:
+        return JsonResponse({"success": False, "message": "Vui lòng nhập số điện thoại hợp lệ (từ 10 chữ số)."}, status=400)
+
+    ConsultationLead.objects.create(
+        customer_name=name,
+        phone=phone,
+        note=note or "Yêu cầu tư vấn trực tiếp từ Chatbot AI",
+        status=ConsultationLead.Status.NEW
+    )
+
+    return JsonResponse({
+        "success": True,
+        "message": f"Dạ NutriSnack đã ghi nhận số điện thoại {phone}! Chuyên viên tư vấn sẽ liên hệ lại ngay trong ít phút ạ."
+    })
+
