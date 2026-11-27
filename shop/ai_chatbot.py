@@ -23,7 +23,7 @@ def check_handoff_trigger(message: str) -> bool:
 
 def get_handoff_response() -> dict:
     hotline = getattr(settings, "SITE_HOTLINE", "0901234567") or "0901234567"
-    zalo = getattr(settings, "SITE_ZALO", f"https://zalo.me/{hotline}")
+    zalo = getattr(settings, "SITE_ZALO", "https://zalo.me/0827721974") or "https://zalo.me/0827721974"
     email = getattr(settings, "SITE_CONTACT_EMAIL", "nutrisnack@gmail.com")
 
     return {

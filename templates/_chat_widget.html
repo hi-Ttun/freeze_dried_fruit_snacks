@@ -127,7 +127,7 @@
       // Nếu là luồng Human Handoff -> Hiển thị Card tư vấn viên
       if (isHandoff) {
         const hotline = (handoffInfo && handoffInfo.hotline) ? handoffInfo.hotline : "{{ SITE_HOTLINE|default:'0901234567' }}";
-        const zalo = (handoffInfo && handoffInfo.zalo) ? handoffInfo.zalo : `https://zalo.me/${hotline}`;
+        const zalo = (handoffInfo && handoffInfo.zalo) ? handoffInfo.zalo : "{{ SITE_ZALO|default:'https://zalo.me/0827721974' }}";
         
         contentHtml += `
           <div class="handoff-card">
