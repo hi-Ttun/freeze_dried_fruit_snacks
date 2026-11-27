@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Khởi động NutriSnack</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #f0f7f3 0%, #e2efe7 100%);
+      color: #1b4b2c;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 1.5rem;
+    }
+    .launcher-card {
+      background: #ffffff;
+      max-width: 520px;
+      width: 100%;
+      border-radius: 20px;
+      box-shadow: 0 15px 40px rgba(27, 75, 44, 0.12);
+      padding: 2.5rem 2rem;
+      text-align: center;
+      border: 1px solid #d1e7d8;
+    }
+    .launcher-icon {
+      font-size: 3.5rem;
+      margin-bottom: 1rem;
+      display: inline-block;
+      animation: bounce 2s infinite ease-in-out;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+    h1 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #1b4b2c;
+      margin-bottom: 0.5rem;
+    }
+    .tagline {
+      font-size: 0.95rem;
+      color: #557b63;
+      margin-bottom: 1.8rem;
+    }
+    .status-box {
+      background: #f4faf6;
+      border: 1.5px dashed #84cc9c;
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1.8rem;
+      text-align: left;
+    }
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+    }
+    .status-item:last-child { margin-bottom: 0; }
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #e63946;
+      display: inline-block;
+    }
+    .dot.online {
+      background: #2a9d8f;
+      box-shadow: 0 0 8px #2a9d8f;
+    }
+    .btn-action {
+      display: block;
+      width: 100%;
+      background: linear-gradient(135deg, #1b4b2c 0%, #2e7d4a 100%);
+      color: #ffffff;
+      padding: 0.95rem 1.5rem;
+      border-radius: 10px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 4px 15px rgba(27, 75, 44, 0.25);
+      transition: all 0.2s;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-action:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(27, 75, 44, 0.35);
+    }
+    .tip-text {
+      margin-top: 1.25rem;
+      font-size: 0.85rem;
+      color: #64748b;
+      line-height: 1.5;
+    }
+    .tip-text code {
+      background: #f1f5f9;
+      color: #0f172a;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <div class="launcher-card">
+    <div class="launcher-icon">🌿</div>
+    <h1>NutriSnack Store</h1>
+    <p class="tagline">Siêu thị Trái cây sấy thăng hoa & Hạt dinh dưỡng</p>
+
+    <div class="status-box">
+      <div class="status-item">
+        <span id="server-dot" class="dot"></span>
+        <span id="server-text">Đang kiểm tra kết nối máy chủ Django...</span>
+      </div>
+      <div class="status-item" style="color: #64748b; font-size: 0.8rem;">
+        <span>🌐 Địa chỉ máy chủ: <code>http://127.0.0.1:8000</code></span>
+      </div>
+    </div>
+
+    <a id="btn-redirect" href="http://127.0.0.1:8000" class="btn-action">
+      👉 Truy cập Website NutriSnack
+    </a>
+
+    <div class="tip-text">
+      💡 <strong>Mẹo mở nhanh 1 chạm:</strong> Nhấp đúp vào file <code>Mo_Web_Nhanh.bat</code> (hoặc <code>index.bat</code>) trong thư mục để tự động khởi động server và mở web ngay lập tức!
+    </div>
+  </div>
+
+  <script>
+    const serverUrl = "http://127.0.0.1:8000/";
+    const serverDot = document.getElementById("server-dot");
+    const serverText = document.getElementById("server-text");
+    const btnRedirect = document.getElementById("btn-redirect");
+
+    function checkServer() {
+      fetch(serverUrl, { mode: "no-cors" })
+        .then(() => {
+          serverDot.className = "dot online";
+          serverText.innerHTML = "<strong>Máy chủ đang hoạt động!</strong> Đang chuyển hướng...";
+          setTimeout(() => {
+            window.location.href = serverUrl;
+          }, 400);
+        })
+        .catch(() => {
+          serverDot.className = "dot";
+          serverText.innerHTML = "Máy chủ chưa bật. Hãy chạy file <code>Mo_Web_Nhanh.bat</code>";
+        });
+    }
+
+    // Kiểm tra ngay khi mở file và lặp lại mỗi 2 giây
+    checkServer();
+    setInterval(checkServer, 2000);
+  </script>
+</body>
+</html>
